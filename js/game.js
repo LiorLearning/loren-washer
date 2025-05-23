@@ -56,6 +56,7 @@ class MainGame extends Phaser.Scene {
         this.load.image('scroll', 'assets/enderpearl.png');
         // Load hit sound effect
         this.load.audio('hit_sfx', 'assets/hit.mp3');
+        this.load.image('endersword', 'assets/endersword.png');
     }
 
     create() {
@@ -306,6 +307,8 @@ class MainGame extends Phaser.Scene {
     }
 
     createUI() {
+        const w = this.scale.width;
+        const h = this.scale.height;
         // Health bar (top left)
         this.healthBarBg = this.add.rectangle(120, 30, 120, 16, 0x222222).setOrigin(0, 0.5).setDepth(20);
         this.healthBar = this.add.rectangle(120, 30, 120, 16, 0xff4444).setOrigin(0, 0.5).setDepth(21);
@@ -351,98 +354,250 @@ class MainGame extends Phaser.Scene {
             .setOrigin(0.5)
             .setDepth(100)
             .setVisible(false);
-        this.awaitingMathText = this.add.text(480, 270, 'Press M to answer math question', {
+        this.awaitingMathText = this.add.text(480, 270, 'Press M to get fire', {
             fontSize: '18px',
             fill: '#fff',
             fontFamily: 'monospace',
             align: 'center'
         }).setOrigin(0.5).setDepth(101).setVisible(false);
-        // Create math overlay UI (modern quiz style)
-        const panelW = 600, panelH = 380, panelR = 32;
-        // Remove old overlay background rectangle
-        // this.mathOverlayBg = this.add.rectangle(480, 270, panelW, panelH, 0x181a22, 0.98)
-        //     .setOrigin(0.5)
-        //     .setDepth(300)
-        //     .setVisible(false);
+        // Create math overlay UI (modern quiz style with enhanced design)
+        const panelW = 750, panelH = 550, panelR = 28;
 
-        // Use a single graphics object for both fill and stroke
+        // Enhanced panel with modern glassmorphism effect
         this.mathOverlayPanel = this.add.graphics();
         this.mathOverlayPanel.clear();
-        this.mathOverlayPanel.fillStyle(0x181a22, 0.98);
+        
+        // Create dark background with blur effect simulation
+        this.mathOverlayPanel.fillStyle(0x0a0a0a, 0.85);
         this.mathOverlayPanel.fillRoundedRect(480 - panelW/2, 270 - panelH/2, panelW, panelH, panelR);
-        this.mathOverlayPanel.lineStyle(8, 0x00eaff, 0.7);
-        this.mathOverlayPanel.strokeRoundedRect(480 - panelW/2, 270 - panelH/2, panelW, panelH, panelR);
+        
+        // Glassmorphism border effect - outer glow
+        this.mathOverlayPanel.lineStyle(6, 0x00f5ff, 0.6);
+        this.mathOverlayPanel.strokeRoundedRect(480 - panelW/2 - 3, 270 - panelH/2 - 3, panelW + 6, panelH + 6, panelR + 3);
+        
+        // Inner glass effect
+        this.mathOverlayPanel.lineStyle(2, 0x64ffda, 0.8);
+        this.mathOverlayPanel.strokeRoundedRect(480 - panelW/2 + 1, 270 - panelH/2 + 1, panelW - 2, panelH - 2, panelR - 1);
+        
+        // Add subtle inner glow
+        this.mathOverlayPanel.fillStyle(0x00f5ff, 0.03);
+        this.mathOverlayPanel.fillRoundedRect(480 - panelW/2 + 10, 270 - panelH/2 + 10, panelW - 20, panelH - 20, panelR - 10);
+        
         this.mathOverlayPanel.setDepth(299).setVisible(false);
 
-        // Title
-        this.mathOverlayTitle = this.add.text(480, 270 - panelH/2 + 48, 'MATH CHALLENGE', {
+        // Modern title with cyberpunk styling
+        this.mathOverlayTitle = this.add.text(480, 270 - panelH/2 + 80, '⚡ MATH CHALLENGE ⚡', {
             fontSize: '44px',
-            fill: '#fff',
+            fill: '#ffffff',
             fontFamily: 'Arial Black, Arial, sans-serif',
             fontStyle: 'bold',
             align: 'center',
-            stroke: '#00eaff',
-            strokeThickness: 6,
-            shadow: { offsetX: 0, offsetY: 0, color: '#00eaff', blur: 18, fill: true }
+            stroke: '#4a9eff',
+            strokeThickness: 4,
+            shadow: { 
+                offsetX: 0, 
+                offsetY: 0, 
+                color: '#4a9eff', 
+                blur: 25, 
+                fill: true 
+            }
         }).setOrigin(0.5).setDepth(301).setVisible(false);
-        // Question
-        this.mathQuestionText = this.add.text(480, 270 - panelH/2 + 110, '', {
-            fontSize: '36px',
-            fill: '#fff',
+
+        // Animated decorative lines around title
+        this.mathTitleDecor1 = this.add.graphics();
+        this.mathTitleDecor1.lineStyle(4, 0x00f5ff, 0.8);
+        this.mathTitleDecor1.lineBetween(480 - 200, 270 - panelH/2 + 120, 480 + 200, 270 - panelH/2 + 120);
+        this.mathTitleDecor1.setDepth(300).setVisible(false);
+
+        // Add animated particles around title (using simple graphics)
+        this.mathTitleParticles = [];
+        for (let i = 0; i < 6; i++) {
+            const particle = this.add.graphics();
+            particle.fillStyle(0x00f5ff, 0.6);
+            particle.fillCircle(0, 0, 3);
+            particle.setDepth(300).setVisible(false);
+            this.mathTitleParticles.push(particle);
+        }
+
+        // Enhanced question with modern typography and background
+        const questionBg = this.add.graphics();
+        
+        // Much smaller question container that fits better
+        const qBgW = 380, qBgH = 60;
+        questionBg.fillStyle(0x1a2540, 0.9);
+        questionBg.fillRoundedRect(480 - qBgW/2, 270 - panelH/2 + 140, qBgW, qBgH, 12);
+        
+        // Gold border for importance and visual hierarchy
+        questionBg.lineStyle(2, 0xffd700, 0.9);
+        questionBg.strokeRoundedRect(480 - qBgW/2, 270 - panelH/2 + 140, qBgW, qBgH, 12);
+        
+        questionBg.lineStyle(1, 0x64ffda, 0.6);
+        questionBg.strokeRoundedRect(480 - qBgW/2 + 2, 270 - panelH/2 + 142, qBgW - 4, qBgH - 4, 10);
+        
+        // Inner glow for question emphasis
+        questionBg.fillStyle(0xffd700, 0.06);
+        questionBg.fillRoundedRect(480 - qBgW/2 + 4, 270 - panelH/2 + 144, qBgW - 8, qBgH - 8, 8);
+        
+        questionBg.setDepth(301).setVisible(false);
+        
+        this.mathQuestionBg = questionBg;
+        
+        this.mathQuestionText = this.add.text(480, 270 - panelH/2 + 170, '', {
+            fontSize: '32px',
+            fill: '#ffffff',
             fontFamily: 'Arial Black, Arial, sans-serif',
             fontStyle: 'bold',
             align: 'center',
-            stroke: '#fff',
-            strokeThickness: 2
+            stroke: '#1a2540',
+            strokeThickness: 2,
+            shadow: { 
+                offsetX: 0, 
+                offsetY: 1, 
+                color: '#ffd700', 
+                blur: 8, 
+                fill: true 
+            }
         }).setOrigin(0.5).setDepth(302).setVisible(false);
-        // Answer buttons (2x2 grid, centered)
+
+        // Completely redesigned answer buttons with modern card-like design
         this.mathAnswerButtons = [];
-        const btnW = 200, btnH = 70, btnR = 24;
-        const btnColors = { fill: 0x3ab0ff, stroke: 0xffffff };
-        // Center the grid
+        const btnW = 260, btnH = 75, btnR = 18;
+        
+        // Center the grid with better spacing
         const gridRows = 2, gridCols = 2;
-        const btnSpacingX = 40, btnSpacingY = 28;
+        const btnSpacingX = 80, btnSpacingY = 60;
         const totalBtnW = gridCols * btnW + (gridCols - 1) * btnSpacingX;
         const totalBtnH = gridRows * btnH + (gridRows - 1) * btnSpacingY;
-        // Calculate vertical position: place grid below question, centered in lower part of panel
-        const questionFontSize = 36;
-        const questionY = 270 - panelH/2 + 110;
-        const questionBottomY = questionY + questionFontSize/2;
-        const gridTopY = questionBottomY + 32; // 32px gap below question
+        
+        // Position grid in lower portion of panel - adjusted for much smaller question
+        const questionY = 270 - panelH/2 + 170;
+        const gridTopY = questionY + 70;
+        
         for (let i = 0; i < 4; i++) {
             const row = Math.floor(i / 2);
             const col = i % 2;
             const x = 480 - totalBtnW/2 + btnW/2 + col * (btnW + btnSpacingX);
             const y = gridTopY + row * (btnH + btnSpacingY) + btnH/2;
-            // Button background
+            
+            // Create modern card-style button background with original cyan theme
             const btnBg = this.add.graphics();
-            btnBg.fillStyle(btnColors.fill, 1);
+            
+            // Back to original cyan color scheme
+            const btnColor = 0x00f5ff;
+            
+            // Base card with glassmorphism effect
+            btnBg.fillStyle(0x1a1a2e, 0.8);
             btnBg.fillRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
-            btnBg.lineStyle(4, 0x00eaff, 0.7);
+            
+            // Original cyan border
+            btnBg.lineStyle(3, btnColor, 0.8);
             btnBg.strokeRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
+            
+            btnBg.lineStyle(1, 0x64ffda, 0.6);
+            btnBg.strokeRoundedRect(x - btnW/2 + 2, y - btnH/2 + 2, btnW - 4, btnH - 4, btnR - 2);
+            
+            // Inner glow with original color
+            btnBg.fillStyle(btnColor, 0.05);
+            btnBg.fillRoundedRect(x - btnW/2 + 4, y - btnH/2 + 4, btnW - 8, btnH - 8, btnR - 4);
+            
             btnBg.setDepth(303).setVisible(false);
-            // Button text
+            
+            // Modern button text with original styling
             const btn = this.add.text(x, y, '', {
-                fontSize: '32px',
-                fill: '#fff',
+                fontSize: '36px',
+                fill: '#ffffff',
                 fontFamily: 'Arial Black, Arial, sans-serif',
                 fontStyle: 'bold',
                 align: 'center',
-                stroke: '#fff',
-                strokeThickness: 2,
-                shadow: { offsetX: 0, offsetY: 0, color: '#00eaff', blur: 8, fill: true }
+                stroke: '#1a1a2e',
+                strokeThickness: 3,
+                shadow: { 
+                    offsetX: 0, 
+                    offsetY: 0, 
+                    color: btnColor, 
+                    blur: 15, 
+                    fill: true 
+                }
             }).setOrigin(0.5).setDepth(304).setVisible(false).setInteractive({ useHandCursor: true });
-            btn.on('pointerdown', () => this.handleMathAnswer(i));
-            this.mathAnswerButtons.push({ btn, btnBg });
+            
+            // Enhanced hover effects with original colors
+            btn.on('pointerover', () => {
+                btnBg.clear();
+                
+                // Brighter hover state
+                btnBg.fillStyle(0x2a2a4e, 0.9);
+                btnBg.fillRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
+                
+                // Stronger border on hover
+                btnBg.lineStyle(4, btnColor, 1);
+                btnBg.strokeRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
+                
+                btnBg.lineStyle(2, 0x64ffda, 0.8);
+                btnBg.strokeRoundedRect(x - btnW/2 + 3, y - btnH/2 + 3, btnW - 6, btnH - 6, btnR - 3);
+                
+                // Enhanced glow on hover
+                btnBg.fillStyle(btnColor, 0.1);
+                btnBg.fillRoundedRect(x - btnW/2 + 6, y - btnH/2 + 6, btnW - 12, btnH - 12, btnR - 6);
+            });
+            
+            btn.on('pointerout', () => {
+                btnBg.clear();
+                
+                // Return to normal state
+                btnBg.fillStyle(0x1a1a2e, 0.8);
+                btnBg.fillRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
+                
+                btnBg.lineStyle(3, btnColor, 0.8);
+                btnBg.strokeRoundedRect(x - btnW/2, y - btnH/2, btnW, btnH, btnR);
+                
+                btnBg.lineStyle(1, 0x64ffda, 0.6);
+                btnBg.strokeRoundedRect(x - btnW/2 + 2, y - btnH/2 + 2, btnW - 4, btnH - 4, btnR - 2);
+                
+                btnBg.fillStyle(btnColor, 0.05);
+                btnBg.fillRoundedRect(x - btnW/2 + 4, y - btnH/2 + 4, btnW - 8, btnH - 8, btnR - 4);
+            });
+            
+            btn.on('pointerdown', () => {
+                // Enhanced click feedback
+                this.tweens.add({
+                    targets: [btn, btnBg],
+                    scaleX: 0.92,
+                    scaleY: 0.92,
+                    duration: 80,
+                    yoyo: true,
+                    ease: 'Power2',
+                    onComplete: () => this.handleMathAnswer(i)
+                });
+            });
+            
+            this.mathAnswerButtons.push({ btn, btnBg, color: btnColor });
         }
-        // Feedback text
-        this.mathFeedbackText = this.add.text(480, 270 + panelH/2 - 40, '', {
+        
+        // Enhanced feedback text with modern design
+        const feedbackBg = this.add.graphics();
+        feedbackBg.fillStyle(0x1a1a2e, 0.9);
+        feedbackBg.lineStyle(3, 0x64ffda, 0.8);
+        feedbackBg.fillRoundedRect(480 - 220, 270 + panelH/2 - 80, 440, 60, 20);
+        feedbackBg.strokeRoundedRect(480 - 220, 270 + panelH/2 - 80, 440, 60, 20);
+        feedbackBg.setDepth(304).setVisible(false);
+        
+        this.mathFeedbackBg = feedbackBg;
+        
+        this.mathFeedbackText = this.add.text(480, 270 + panelH/2 - 50, '', {
             fontSize: '28px',
-            fill: '#fff',
+            fill: '#ffffff',
             fontFamily: 'Arial Black, Arial, sans-serif',
+            fontStyle: 'bold',
             align: 'center',
-            stroke: '#00eaff',
-            strokeThickness: 2
+            stroke: '#1a1a2e',
+            strokeThickness: 3,
+            shadow: { 
+                offsetX: 0, 
+                offsetY: 0, 
+                color: '#64ffda', 
+                blur: 15, 
+                fill: true 
+            }
         }).setOrigin(0.5).setDepth(305).setVisible(false);
         // Store overlay (hidden by default)
         this.storeOverlayGroup = this.add.group();
@@ -519,7 +674,7 @@ class MainGame extends Phaser.Scene {
             // Cost badge (top right)
             const costBadge = this.add.rectangle(x + cardW/2 - 22, 120 - cardH/2 + 22, 32, 32, 0x181a22, 1)
                 .setStrokeStyle(2, 0xff00ff).setDepth(103).setVisible(false);
-            const costText = this.add.text(x + cardW/2 - 22, 120 - cardH/2 + 22, this.powerUps[i].cost.toString(), {
+            const costText = this.add.text(x + cardW/2 - 22, 120 - cardH/2 + 22, `$${this.powerUps[i].cost}`, {
                 fontSize: '18px', fill: '#ffd700', fontFamily: 'monospace', fontStyle: 'bold', align: 'center'
             }).setOrigin(0.5).setDepth(104).setVisible(false);
             // Level badge (top right, next to cost)
@@ -576,6 +731,53 @@ class MainGame extends Phaser.Scene {
             }).setOrigin(0, 0).setDepth(31).setVisible(false);
             this.powerUpIcons.push({ icon, count, key: iconList[i].key });
         }
+
+        // --- Modern Store Overlay Redesign ---
+        // Frosted glass overlay background
+        if (!this.storeGlassBg) {
+            this.storeGlassBg = this.add.graphics().setDepth(9000).setVisible(false);
+        }
+        const glassW = Math.min(w - 64, 900), glassH = cardH + 180;
+        this.storeGlassBg.clear();
+        this.storeGlassBg.fillStyle(0x181a22, 0.92);
+        this.storeGlassBg.fillRoundedRect(w/2 - glassW/2, h/2 - glassH/2, glassW, glassH, 32);
+        this.storeGlassBg.lineStyle(5, 0x00f5ff, 0.18);
+        this.storeGlassBg.strokeRoundedRect(w/2 - glassW/2, h/2 - glassH/2, glassW, glassH, 32);
+        this.storeGlassBg.setVisible(false);
+
+        // Close (X) button
+        if (!this.storeCloseBtn) {
+            this.storeCloseBtn = this.add.text(w/2 + glassW/2 - 32, h/2 - glassH/2 + 24, '✕', {
+                fontSize: '32px', fill: '#fff', fontFamily: 'Arial Black', fontStyle: 'bold', stroke: '#00f5ff', strokeThickness: 3
+            }).setOrigin(0.5).setDepth(10001).setInteractive({ useHandCursor: true }).setVisible(false);
+            this.storeCloseBtn.on('pointerdown', () => this.hideStoreOverlay());
+        }
+        this.storeCloseBtn.setPosition(w/2 + glassW/2 - 32, h/2 - glassH/2 + 24).setVisible(false);
+
+        // Modern currency bar with coin icon
+        if (!this.storeCurrencyBar) {
+            this.storeCurrencyBar = this.add.graphics().setDepth(10000).setVisible(false);
+        }
+        const barY = h/2 - glassH/2 + 60;
+        this.storeCurrencyBar.clear();
+        this.storeCurrencyBar.fillStyle(0x23242a, 0.98);
+        this.storeCurrencyBar.fillRoundedRect(w/2 - 120, barY - 24, 240, 48, 18);
+        this.storeCurrencyBar.lineStyle(3, 0x00f5ff, 0.7);
+        this.storeCurrencyBar.strokeRoundedRect(w/2 - 120, barY - 24, 240, 48, 18);
+        this.storeCurrencyBar.setVisible(false);
+        if (!this.storeCurrencyIcon) {
+            this.storeCurrencyIcon = this.add.text(w/2 - 80, barY, '💰', {
+                fontSize: '32px', fontFamily: 'Arial', fontStyle: 'bold', align: 'center'
+            }).setOrigin(0.5).setDepth(10001).setVisible(false);
+        }
+        this.storeCurrencyIcon.setPosition(w/2 - 80, barY).setVisible(false);
+        if (!this.storeCurrencyTextModern) {
+            this.storeCurrencyTextModern = this.add.text(w/2 + 10, barY, '', {
+                fontSize: '28px', fill: '#ffd700', fontFamily: 'Arial Black', fontStyle: 'bold', align: 'left', stroke: '#000', strokeThickness: 4
+            }).setOrigin(0, 0.5).setDepth(10001).setVisible(false);
+        }
+        this.storeCurrencyTextModern.setText(`$${this.currency}`).setPosition(w/2 - 50, barY).setVisible(false);
+        // --- End Modern Store Overlay Redesign ---
     }
 
     startEnemySpawner() {
@@ -674,6 +876,7 @@ class MainGame extends Phaser.Scene {
     }
 
     update(time, delta) {
+        if (this.gamePausedForVictory) return;
         if (this.introActive) return; // Block all game logic while intro is up
         if (this.gameOver) return;
         
@@ -1038,7 +1241,11 @@ class MainGame extends Phaser.Scene {
                 // Reset power-ups at the start of each wave
                 this.resetPowerUpsForNewWave();
                 this.updateBackgroundForWave();
-                this.showStoreOverlay();
+                if (this.currentWave === 7) {
+                    this.showVictoryOverlay();
+                } else {
+                    this.showStoreOverlay();
+                }
             }
         });
     }
@@ -1121,20 +1328,105 @@ class MainGame extends Phaser.Scene {
         }
 
         this.mathOverlayVisible = !this.mathOverlayVisible;
+        // Hide store UI when math overlay is shown
+        if (this.mathOverlayVisible) {
+            if (this.waveCompleteText) this.waveCompleteText.setVisible(false);
+            if (this.waveCompleteBg) this.waveCompleteBg.setVisible(false);
+            if (this.storeCurrencyText) this.storeCurrencyText.setVisible(false);
+            if (this.storeGlassBg) this.storeGlassBg.setVisible(false);
+            if (this.storeCloseBtn) this.storeCloseBtn.setVisible(false);
+            if (this.storeCurrencyBar) this.storeCurrencyBar.setVisible(false);
+            if (this.storeCurrencyIcon) this.storeCurrencyIcon.setVisible(false);
+            if (this.storeCurrencyTextModern) this.storeCurrencyTextModern.setVisible(false);
+        } else {
+            // Restore store UI only if storeActive is true
+            if (this.storeActive) {
+                if (this.waveCompleteText) this.waveCompleteText.setVisible(true);
+                if (this.waveCompleteBg) this.waveCompleteBg.setVisible(true);
+                if (this.storeCurrencyText) this.storeCurrencyText.setVisible(true);
+                if (this.storeGlassBg) this.storeGlassBg.setVisible(true);
+                if (this.storeCloseBtn) this.storeCloseBtn.setVisible(true);
+                if (this.storeCurrencyBar) this.storeCurrencyBar.setVisible(true);
+                if (this.storeCurrencyIcon) this.storeCurrencyIcon.setVisible(true);
+                if (this.storeCurrencyTextModern) this.storeCurrencyTextModern.setVisible(true);
+            }
+        }
         // Set all math overlay elements to high depth (above store)
         this.mathOverlayPanel.setVisible(this.mathOverlayVisible).setDepth(299);
         this.mathOverlayTitle.setVisible(this.mathOverlayVisible).setDepth(301);
+        this.mathTitleDecor1.setVisible(this.mathOverlayVisible).setDepth(300);
+        
+        // Show/hide animated particles around title
+        this.mathTitleParticles.forEach(particle => {
+            particle.setVisible(this.mathOverlayVisible).setDepth(300);
+        });
+        
+        this.mathQuestionBg.setVisible(this.mathOverlayVisible).setDepth(301);
         this.mathQuestionText.setVisible(this.mathOverlayVisible).setDepth(302);
         this.mathAnswerButtons.forEach(({btn, btnBg}) => {
-            btn.setVisible(this.mathOverlayVisible).setDepth(303);
-            btnBg.setVisible(this.mathOverlayVisible).setDepth(302);
+            btn.setVisible(this.mathOverlayVisible).setDepth(304);
+            btnBg.setVisible(this.mathOverlayVisible).setDepth(303);
         });
-        this.mathFeedbackText.setVisible(false).setDepth(304);
+        this.mathFeedbackBg.setVisible(false).setDepth(304);
+        this.mathFeedbackText.setVisible(false).setDepth(305);
+        
         // Always hide the awaiting math prompt when showing overlay
         if (this.mathOverlayVisible) {
             this.generateMathChallenge();
             this.awaitingMathText.setVisible(false);
             this.awaitingMathBg.setVisible(false);
+            
+            // Add smooth entrance animation for the overlay
+            this.mathOverlayPanel.setAlpha(0).setScale(0.8);
+            this.mathOverlayTitle.setAlpha(0).setScale(0.8);
+            this.mathQuestionBg.setAlpha(0).setScale(0.8);
+            this.mathQuestionText.setAlpha(0).setScale(0.8);
+            this.mathAnswerButtons.forEach(({btn, btnBg}) => {
+                btn.setAlpha(0).setScale(0.8);
+                btnBg.setAlpha(0).setScale(0.8);
+            });
+            
+            // Animate elements appearing
+            this.tweens.add({
+                targets: [this.mathOverlayPanel, this.mathOverlayTitle, this.mathQuestionBg, this.mathQuestionText],
+                alpha: 1,
+                scale: 1,
+                duration: 400,
+                ease: 'Back.out'
+            });
+            
+            // Animate buttons appearing with stagger
+            this.mathAnswerButtons.forEach(({btn, btnBg}, index) => {
+                this.tweens.add({
+                    targets: [btn, btnBg],
+                    alpha: 1,
+                    scale: 1,
+                    duration: 300,
+                    delay: 200 + index * 100,
+                    ease: 'Back.out'
+                });
+            });
+            
+            // Animate particles floating around title
+            this.mathTitleParticles.forEach((particle, index) => {
+                const angle = (index / 6) * Math.PI * 2;
+                const radius = 120 + Math.sin(this.time.now * 0.001 + index) * 20;
+                const x = 480 + Math.cos(angle) * radius;
+                const y = 270 - 300 + 80 + Math.sin(angle) * radius * 0.3; // panelH/2 = 300
+                
+                particle.setPosition(x, y);
+                
+                // Create floating animation
+                this.tweens.add({
+                    targets: particle,
+                    x: x + Math.cos(angle + Math.PI/4) * 30,
+                    y: y + Math.sin(angle + Math.PI/4) * 15,
+                    duration: 2000 + index * 200,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.inOut'
+                });
+            });
         }
     }
 
@@ -1160,8 +1452,13 @@ class MainGame extends Phaser.Scene {
         if (index === this.mathCurrentCorrectIndex) {
             this.flameShards += 5;
             this.currency += 10; // 10 currency for correct answer
-            this.mathFeedbackText.setText('Correct! +10 Currency');
-            this.mathFeedbackText.setStyle({ fill: '#00ff88', backgroundColor: '#222' });
+            this.mathFeedbackText.setText('✅ CORRECT! +10 Currency');
+            this.mathFeedbackText.setStyle({ fill: '#00ff88' });
+            this.mathFeedbackBg.clear();
+            this.mathFeedbackBg.fillStyle(0x001122, 0.9);
+            this.mathFeedbackBg.lineStyle(3, 0x00ff88, 0.8);
+            this.mathFeedbackBg.fillRoundedRect(480 - 220, 270 + 275 - 80, 440, 60, 20);
+            this.mathFeedbackBg.strokeRoundedRect(480 - 220, 270 + 275 - 80, 440, 60, 20);
             this.playerCanAttack = true;
             this.awaitingMath = false;
             this.playerShotsFired = 0; // Reset shots fired counter after answering
@@ -1171,20 +1468,66 @@ class MainGame extends Phaser.Scene {
                 this.showStoreOverlay(); // Refresh store UI with new currency
             }
         } else {
-            this.mathFeedbackText.setText('Incorrect!');
-            this.mathFeedbackText.setStyle({ fill: '#ff4444', backgroundColor: '#222' });
+            this.mathFeedbackText.setText('❌ INCORRECT!');
+            this.mathFeedbackText.setStyle({ fill: '#ff4444' });
+            this.mathFeedbackBg.clear();
+            this.mathFeedbackBg.fillStyle(0x220011, 0.9);
+            this.mathFeedbackBg.lineStyle(3, 0xff4444, 0.8);
+            this.mathFeedbackBg.fillRoundedRect(480 - 220, 270 + 275 - 80, 440, 60, 20);
+            this.mathFeedbackBg.strokeRoundedRect(480 - 220, 270 + 275 - 80, 440, 60, 20);
         }
-        this.mathFeedbackText.setVisible(true);
-        this.time.delayedCall(1000, () => {
-            this.mathOverlayVisible = false;
-            this.mathOverlayPanel.setVisible(false);
-            this.mathOverlayTitle.setVisible(false);
-            this.mathQuestionText.setVisible(false);
-            this.mathAnswerButtons.forEach(({btn, btnBg}) => {
-                btn.setVisible(false);
-                btnBg.setVisible(false);
+        
+        // Show feedback with animation
+        this.mathFeedbackBg.setVisible(true).setAlpha(0).setScale(0.8);
+        this.mathFeedbackText.setVisible(true).setAlpha(0).setScale(0.8);
+        
+        this.tweens.add({
+            targets: [this.mathFeedbackBg, this.mathFeedbackText],
+            alpha: 1,
+            scale: 1,
+            duration: 300,
+            ease: 'Back.out'
+        });
+        
+        this.time.delayedCall(1500, () => {
+            // Exit animation
+            this.tweens.add({
+                targets: [this.mathOverlayPanel, this.mathOverlayTitle, this.mathTitleDecor1, this.mathQuestionBg, this.mathQuestionText, this.mathFeedbackBg, this.mathFeedbackText],
+                alpha: 0,
+                scale: 0.8,
+                duration: 300,
+                ease: 'Back.in',
+                onComplete: () => {
+                    this.mathOverlayVisible = false;
+                    this.mathOverlayPanel.setVisible(false);
+                    this.mathOverlayTitle.setVisible(false);
+                    this.mathTitleDecor1.setVisible(false);
+                    this.mathTitleParticles.forEach(particle => {
+                        particle.setVisible(false);
+                        this.tweens.killTweensOf(particle);
+                    });
+                    this.mathQuestionBg.setVisible(false);
+                    this.mathQuestionText.setVisible(false);
+                    this.mathAnswerButtons.forEach(({btn, btnBg}) => {
+                        btn.setVisible(false);
+                        btnBg.setVisible(false);
+                    });
+                    this.mathFeedbackBg.setVisible(false);
+                    this.mathFeedbackText.setVisible(false);
+                }
             });
-            this.mathFeedbackText.setVisible(false);
+            
+            // Animate buttons disappearing with stagger
+            this.mathAnswerButtons.forEach(({btn, btnBg}, i) => {
+                this.tweens.add({
+                    targets: [btn, btnBg],
+                    alpha: 0,
+                    scale: 0.8,
+                    duration: 200,
+                    delay: i * 50,
+                    ease: 'Back.in'
+                });
+            });
         });
     }
 
@@ -1272,6 +1615,49 @@ class MainGame extends Phaser.Scene {
         this.powerUpState.acceleratedRecovery.unlocked = this.powerUps[1].level > 0;
         this.powerUpState.poisonZone.unlocked = this.powerUps[2].level > 0;
         this.powerUpState.ultraBlast.unlocked = this.powerUps[3].level > 0;
+        // --- Wave Complete Message (guaranteed on top) ---
+        if (!this.waveCompleteBg) {
+            this.waveCompleteBg = this.add.graphics().setDepth(99999).setVisible(false);
+        }
+        if (!this.waveCompleteText) {
+            this.waveCompleteText = this.add.text(w/2, h/2 - cardH/2 - 56, '', {
+                fontSize: '38px',
+                fill: '#ffd700',
+                fontFamily: 'Arial Black, Arial, sans-serif',
+                fontStyle: 'bold',
+                align: 'center',
+                stroke: '#000',
+                strokeThickness: 6,
+                shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 12, fill: true }
+            }).setOrigin(0.5).setDepth(100000).setVisible(false);
+        }
+        const prevWave = this.currentWave - 1;
+        const msg = `Wave ${prevWave} complete! Power up before Wave ${this.currentWave}...`;
+        this.waveCompleteText.setText(msg).setPosition(w/2, h/2 - cardH/2 - 56).setVisible(true).setDepth(100000);
+        // Draw background behind text
+        const padX = 32, padY = 18;
+        const tw = this.waveCompleteText.width + padX;
+        const th = this.waveCompleteText.height + padY;
+        this.waveCompleteBg.clear();
+        this.waveCompleteBg.fillStyle(0x000000, 0.7);
+        this.waveCompleteBg.fillRoundedRect(w/2 - tw/2, h/2 - cardH/2 - 56 - th/2, tw, th, 18);
+        this.waveCompleteBg.setVisible(true).setDepth(99999);
+        // --- End Wave Complete Message ---
+        // --- Store Currency Display ---
+        if (!this.storeCurrencyText) {
+            this.storeCurrencyText = this.add.text(w/2, h/2 - cardH/2 - 12, '', {
+                fontSize: '28px',
+                fill: '#ffd700',
+                fontFamily: 'Arial Black, Arial, sans-serif',
+                fontStyle: 'bold',
+                align: 'center',
+                stroke: '#000',
+                strokeThickness: 4,
+                shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 8, fill: true }
+            }).setOrigin(0.5).setDepth(9998).setVisible(false);
+        }
+        this.storeCurrencyText.setText(`You have: $${this.currency}`).setPosition(w/2, h/2 - cardH/2 - 12).setVisible(true);
+        // --- End Store Currency Display ---
     }
 
     hideStoreOverlay() {
@@ -1292,6 +1678,15 @@ class MainGame extends Phaser.Scene {
             card.levelBadge.setVisible(false);
             card.levelText.setVisible(false);
             card.cardArea.setVisible(false);
+        }
+        if (this.waveCompleteText) {
+            this.waveCompleteText.setVisible(false);
+        }
+        if (this.waveCompleteBg) {
+            this.waveCompleteBg.setVisible(false);
+        }
+        if (this.storeCurrencyText) {
+            this.storeCurrencyText.setVisible(false);
         }
     }
 
@@ -1542,6 +1937,78 @@ class MainGame extends Phaser.Scene {
         if (this.background.texture.key !== key) {
             this.background.setTexture(key);
         }
+    }
+
+    showVictoryOverlay() {
+        this.gamePausedForVictory = true;
+        // Semi-transparent dark overlay
+        if (!this.victoryOverlayBg) {
+            this.victoryOverlayBg = this.add.rectangle(480, 270, 960, 540, 0x000000, 0.8).setDepth(20000).setVisible(false);
+        }
+        this.victoryOverlayBg.setVisible(true);
+        // Endersword image
+        if (!this.victorySword) {
+            this.victorySword = this.add.image(480, 230, 'endersword').setDepth(20001).setScale(0.5).setVisible(false);
+        }
+        this.victorySword.setVisible(true);
+        // Victory message
+        if (!this.victoryText) {
+            this.victoryText = this.add.text(480, 370, 'Victory! You have unlocked the Endersword!', {
+                fontSize: '38px',
+                fill: '#00f5ff',
+                fontFamily: 'Arial Black, Arial, sans-serif',
+                fontStyle: 'bold',
+                align: 'center',
+                stroke: '#000',
+                strokeThickness: 6,
+                shadow: { offsetX: 0, offsetY: 2, color: '#000', blur: 12, fill: true }
+            }).setOrigin(0.5).setDepth(20002).setVisible(false);
+        }
+        this.victoryText.setVisible(true);
+        // Subtext
+        if (!this.victorySubText) {
+            this.victorySubText = this.add.text(480, 420, 'Level 2 to be designed by Loren', {
+                fontSize: '26px',
+                fill: '#ffd700',
+                fontFamily: 'Arial Black, Arial, sans-serif',
+                align: 'center',
+                stroke: '#000',
+                strokeThickness: 4
+            }).setOrigin(0.5).setDepth(20002).setVisible(false);
+        }
+        this.victorySubText.setVisible(true);
+        // Continue button
+        if (!this.victoryContinueBtn) {
+            this.victoryContinueBtn = this.add.text(480, 480, 'Continue', {
+                fontSize: '32px',
+                fill: '#fff',
+                backgroundColor: '#00f5ff',
+                padding: { left: 32, right: 32, top: 12, bottom: 12 },
+                fontFamily: 'Arial Black, Arial, sans-serif',
+                align: 'center',
+                borderRadius: 12
+            }).setOrigin(0.5).setDepth(20003).setInteractive({ useHandCursor: true }).setVisible(false);
+            this.victoryContinueBtn.on('pointerdown', () => {
+                this.hideVictoryOverlay();
+                this.showStoreOverlay();
+            });
+        }
+        this.victoryContinueBtn.setVisible(true);
+        // Pause game logic while overlay is up
+        this.physics.world.pause();
+        if (this.enemySpawnEvent) this.enemySpawnEvent.paused = true;
+    }
+
+    hideVictoryOverlay() {
+        this.gamePausedForVictory = false;
+        if (this.victoryOverlayBg) this.victoryOverlayBg.setVisible(false);
+        if (this.victorySword) this.victorySword.setVisible(false);
+        if (this.victoryText) this.victoryText.setVisible(false);
+        if (this.victorySubText) this.victorySubText.setVisible(false);
+        if (this.victoryContinueBtn) this.victoryContinueBtn.setVisible(false);
+        // Resume game logic
+        this.physics.world.resume();
+        if (this.enemySpawnEvent) this.enemySpawnEvent.paused = false;
     }
 }
 
